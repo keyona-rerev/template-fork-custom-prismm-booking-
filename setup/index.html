@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="https://res.cloudinary.com/dialhpycd/image/upload/v1784587218/prismm_logo_dark_l1hxso.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1b2b45; --coral:#f9655b; --purple:#6658ea; --yellow:#f5c070;
+    --paper:#f4f1ea; --white:#fff; --ink:#1b2b45;
+    --display:"Bricolage Grotesque",sans-serif; --body:"Hanken Grotesk",sans-serif;
+    --border: rgba(27,43,69,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.5;padding:32px 20px 80px}
+  .wrap{max-width:760px;margin:0 auto}
+
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,34px);letter-spacing:-.02em}
+  .sub{color:rgba(27,43,69,.65);margin-top:8px;max-width:56ch;font-size:15px}
+
+  .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-top:24px}
+  .card h2{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:4px}
+  .card .hint{font-size:13px;color:rgba(27,43,69,.55);margin-bottom:18px}
+
+  .steps{list-style:none;counter-reset:step;margin-top:6px}
+  .steps li{counter-increment:step;position:relative;padding-left:34px;margin-bottom:12px;font-size:14px;color:rgba(27,43,69,.8)}
+  .steps li:last-child{margin-bottom:0}
+  .steps li::before{content:counter(step);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--display);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .steps strong{color:var(--ink)}
+
+  label{display:block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:rgba(27,43,69,.6);margin-bottom:6px}
+  input[type=text], input[type=email], input[type=password], select{
+    width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:var(--body);font-size:14.5px;color:var(--ink);background:var(--paper);
+  }
+  input:focus, select:focus{outline:none;border-color:var(--purple);background:var(--white)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{margin-bottom:16px}
+  .field:last-child{margin-bottom:0}
+
+  .label-with-info{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .label-with-info label{margin-bottom:0}
+  .info-btn{width:16px;height:16px;border-radius:50%;background:rgba(102,88,234,.15);color:var(--purple);border:none;font-size:11px;font-weight:700;font-family:var(--body);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;position:relative}
+  .info-btn:hover{background:rgba(102,88,234,.28)}
+  .info-btn.active{background:var(--purple);color:#fff}
+
+  .info-pop{display:none;position:absolute;z-index:20;top:calc(100% + 8px);left:0;width:300px;background:var(--navy);color:#fff;border-radius:12px;padding:16px 18px;font-size:12.5px;line-height:1.6;box-shadow:0 12px 28px rgba(27,43,69,.35)}
+  .info-pop.show{display:block}
+  .info-pop strong{color:var(--yellow);display:block;margin-bottom:6px;font-size:12.5px}
+  .info-pop ol{margin:0 0 8px 16px;padding:0}
+  .info-pop li{margin-bottom:4px}
+  .info-pop .share-with{background:rgba(255,255,255,.1);border-radius:6px;padding:6px 9px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;margin:8px 0;word-break:break-all}
+  .info-pop .close-pop{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,.6);font-size:14px;cursor:pointer;line-height:1}
+  .field-wrap{position:relative}
+
+  .pool-row{display:grid;grid-template-columns:28px 1fr 1fr auto;gap:10px;align-items:start;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
+  .pool-row:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .pool-order{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--display);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:26px}
+  .pool-remove{background:none;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;color:#c0392b;font-size:16px;cursor:pointer;margin-top:22px}
+  .pool-remove:hover{background:rgba(192,57,43,.08)}
+  .add-pool{margin-top:14px;background:none;border:1.5px dashed var(--purple);color:var(--purple);border-radius:10px;padding:9px 16px;font-family:var(--body);font-weight:600;font-size:13.5px;cursor:pointer}
+  .add-pool:hover{background:rgba(102,88,234,.06)}
+  .pool-note{font-size:12.5px;color:rgba(27,43,69,.5);margin-top:12px}
+
+  .days{display:grid;grid-template-columns:auto 1fr 1fr;gap:10px 14px;align-items:center}
+  .day-name{font-size:13.5px;font-weight:600}
+
+  .placeholder-hint{font-size:12px;color:rgba(27,43,69,.5);margin-top:6px}
+  code{background:rgba(27,43,69,.08);border-radius:5px;padding:1px 6px;font-size:12.5px}
+
+  .save-bar{position:sticky;bottom:16px;margin-top:28px;background:var(--navy);border-radius:14px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 10px 30px rgba(27,43,69,.25)}
+  .save-bar p{color:rgba(255,255,255,.75);font-size:13px}
+  .save-bar strong{color:#fff}
+  button.primary{background:var(--coral);color:var(--navy);border:none;border-radius:999px;padding:13px 26px;font-family:var(--display);font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+  button.primary:hover{filter:brightness(1.06)}
+  button.primary:disabled{opacity:.5;cursor:not-allowed}
+
+  .banner{display:none;border-radius:10px;padding:12px 16px;font-size:13.5px;margin-top:16px}
+  .banner.show{display:block}
+  .banner.err{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);color:#a83226}
+  .banner.ok{background:rgba(102,88,234,.08);border:1px solid rgba(102,88,234,.3);color:var(--purple)}
+
+  #gate{max-width:400px;margin:14vh auto 0;text-align:center}
+  #gate .card{text-align:left}
+  #gate .lock{width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;margin:0 auto 16px}
+  #gate h1{font-size:22px;text-align:center}
+  #gate .sub{text-align:center;margin:8px auto 0}
+  #app{display:none}
+  .loading{text-align:center;color:rgba(27,43,69,.5);font-size:13px;padding:40px 0}
+</style>
+</head>
+<body>
+
+<div id="gate" class="wrap">
+  <div class="lock">🔒</div>
+  <h1>Booking Engine Setup</h1>
+  <p class="sub">This link configures a live booking page. Enter the setup password your ReRev contact gave you.</p>
+  <div class="card">
+    <div class="field">
+      <label>Setup password</label>
+      <input type="password" id="gatePassword" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPassword()">
+    </div>
+    <button class="primary" id="gateBtn" style="width:100%" onclick="checkPassword()">Continue</button>
+    <div class="banner err" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="app">
+<div class="wrap">
+
+  <h1>Booking Engine Setup</h1>
+  <p class="sub">This saves directly into your booking page's configuration. No code, nothing else to touch.</p>
+
+  <div class="card">
+    <h2>How this works</h2>
+    <ol class="steps">
+      <li><strong>Share your calendars first.</strong> Every calendar below needs to be shared with one email before this page can read it — click the ⓘ next to any email field for exact steps.</li>
+      <li><strong>Fill in the point of contact.</strong> That's whoever must be free for a time to show up at all — bookings get written directly onto their calendar.</li>
+      <li><strong>Add everyone else who could join.</strong> At least one of them must also be free, checked top to bottom.</li>
+      <li><strong>Set your booking hours and page details.</strong></li>
+      <li><strong>Click Save.</strong> Your booking page updates immediately — no waiting, nothing else to deploy.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Before you start: share your calendars</h2>
+    <p class="hint">This page can only read a calendar that's been shared with it. Do this for every email you enter below — click the ⓘ next to any email field for exact steps.</p>
+    <div class="field">
+      <label>Share calendars with this email</label>
+      <input type="text" id="shareWithEmail" readonly style="background:#eef0f5;color:rgba(27,43,69,.7)">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Who's the point of contact?</h2>
+    <p class="hint">This is the person whose calendar decides whether a time slot exists at all. It must be free for a slot to show up, and the booking gets written directly onto this calendar.</p>
+    <div class="row">
+      <div class="field">
+        <label>Display name</label>
+        <input type="text" id="hostLabel">
+      </div>
+      <div class="field field-wrap">
+        <div class="label-with-info">
+          <label style="margin-bottom:0">Email</label>
+          <button class="info-btn" onclick="toggleInfo(this, 'host')" type="button">ⓘ</button>
+        </div>
+        <input type="email" id="hostEmail">
+        <div class="info-pop" data-pop="host">
+          <button class="close-pop" onclick="closeAllInfo()" type="button">×</button>
+          <strong>Share at "Make changes to events"</strong>
+          <ol>
+            <li>Open Google Calendar, signed in as this person.</li>
+            <li>Settings → click their calendar under "My calendars".</li>
+            <li>"Share with specific people or groups" → Add people.</li>
+          </ol>
+          <div class="share-with" id="popHostEmail"></div>
+          <ol start="4">
+            <li>Set permission to <strong style="display:inline;color:#fff">Make changes to events</strong> (not just free/busy — bookings write straight onto this calendar).</li>
+            <li>Send.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Who else can join the call?</h2>
+    <p class="hint">At least one of these people must also be free — checked in the order listed, top choice first. Their names never appear anywhere on the booking page — only on the calendar invite once someone is assigned.</p>
+    <div id="poolRows"></div>
+    <button class="add-pool" onclick="addRow()" type="button">+ Add another person</button>
+  </div>
+
+  <div class="card">
+    <h2>When can people book?</h2>
+    <p class="hint">Applies to the point of contact's calendar. Times are in the timezone below.</p>
+    <div class="field">
+      <label>Timezone</label>
+      <select id="timezone">
+        <option>America/Chicago</option>
+        <option>America/New_York</option>
+        <option>America/Denver</option>
+        <option>America/Los_Angeles</option>
+      </select>
+    </div>
+    <div class="days" id="days"></div>
+  </div>
+
+  <div class="card">
+    <h2>Page & invite details</h2>
+    <div class="field">
+      <label>Page heading</label>
+      <input type="text" id="pageHeading">
+    </div>
+    <div class="field">
+      <label>Calendar event title</label>
+      <input type="text" id="eventTitle">
+      <p class="placeholder-hint">Use <code>{guestName}</code> anywhere you want the booker's name inserted.</p>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <p>Changes take effect immediately once saved.</p>
+    <button class="primary" id="saveBtn" onclick="saveSetup()" type="button">Save setup</button>
+  </div>
+
+  <div class="banner" id="saveBanner"></div>
+</div>
+</div>
+
+<script>
+  // Backend: GAS deployed as a JSON-only API (see Code.gs doGet/doPost in the
+  // paired GAS project). This page never talks to google.script.run — it's a
+  // static site. Swap the line below for your own deployment's /exec URL.
+  var API_BASE = '__REPLACE_WITH_YOUR_GAS_EXEC_URL__';
+
+  function apiGet(params){
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+    return fetch(API_BASE + '?' + qs)
+      .then(function(r){ return r.json(); })
+      .catch(function(err){ return { ok:false, error: String(err.message || err) }; });
+  }
+
+  // text/plain avoids a CORS preflight against the GAS domain; the body is
+  // still parsed as JSON server-side (see Code.gs doPost).
+  function apiPost(body){
+    return fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    })
+      .then(function(r){ return r.json(); })
+      .catch(function(err){ return { ok:false, error: String(err.message || err) }; });
+  }
+
+  var CURRENT_PASSWORD = null;
+
+  function checkPassword(){
+    var val = document.getElementById('gatePassword').value;
+    var btn = document.getElementById('gateBtn');
+    var err = document.getElementById('gateErr');
+    err.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+
+    apiGet({ action: 'getSetupSnapshot', password: val }).then(function(res){
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      if (!res.ok) {
+        err.textContent = res.error;
+        err.classList.add('show');
+        return;
+      }
+      CURRENT_PASSWORD = val;
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      populateForm(res.data);
+    });
+  }
+
+  function toggleInfo(btn, key){
+    var pop = document.querySelector('.info-pop[data-pop="'+key+'"]');
+    var wasOpen = pop.classList.contains('show');
+    closeAllInfo();
+    if (!wasOpen){ pop.classList.add('show'); btn.classList.add('active'); }
+  }
+  function closeAllInfo(){
+    document.querySelectorAll('.info-pop.show').forEach(function(p){ p.classList.remove('show'); });
+    document.querySelectorAll('.info-btn.active').forEach(function(b){ b.classList.remove('active'); });
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target.closest('.info-btn') && !e.target.closest('.info-pop')) closeAllInfo();
+  });
+
+  var DAYS = [
+    {key:1, name:'Monday'}, {key:2, name:'Tuesday'}, {key:3, name:'Wednesday'},
+    {key:4, name:'Thursday'}, {key:5, name:'Friday'}, {key:6, name:'Saturday'}, {key:7, name:'Sunday'}
+  ];
+
+  function renderDays(workingHours){
+    var el = document.getElementById('days');
+    el.innerHTML = '';
+    DAYS.forEach(function(d){
+      var w = (workingHours && workingHours[d.key] && workingHours[d.key][0]) || null;
+      var row = document.createElement('div');
+      row.style.display = 'contents';
+      row.innerHTML =
+        '<div class="day-name">' + d.name + '</div>' +
+        '<input type="text" class="day-start" data-day="'+d.key+'" value="'+(w ? w[0] : '')+'" placeholder="off">' +
+        '<input type="text" class="day-end" data-day="'+d.key+'" value="'+(w ? w[1] : '')+'" placeholder="off">';
+      el.appendChild(row);
+    });
+  }
+
+  var SHARE_WITH = '';
+  function poolInfoPopHTML(n){
+    return '<div class="info-pop" data-pop="pool'+n+'">' +
+      '<button class="close-pop" onclick="closeAllInfo()" type="button">×</button>' +
+      '<strong>Share at "See only free/busy"</strong>' +
+      '<ol>' +
+        '<li>Open Google Calendar, signed in as this person.</li>' +
+        '<li>Settings → click their calendar under "My calendars".</li>' +
+        '<li>"Share with specific people or groups" → Add people.</li>' +
+      '</ol>' +
+      '<div class="share-with">' + SHARE_WITH + '</div>' +
+      '<ol start="4">' +
+        '<li>Set permission to <strong style="display:inline;color:#fff">See only free/busy (hide details)</strong> — that\'s all this person needs.</li>' +
+        '<li>Send.</li>' +
+      '</ol>' +
+    '</div>';
+  }
+
+  function addRow(label, email){
+    var wrap = document.getElementById('poolRows');
+    var n = wrap.children.length + 1;
+    var row = document.createElement('div');
+    row.className = 'pool-row';
+    row.innerHTML =
+      '<div class="pool-order">'+n+'</div>' +
+      '<div class="field"><label>Name</label><input type="text" class="pool-label" placeholder="Name" value="'+(label||'').replace(/"/g,'&quot;')+'"></div>' +
+      '<div class="field field-wrap">' +
+        '<div class="label-with-info"><label style="margin-bottom:0">Email</label>' +
+          '<button class="info-btn" onclick="toggleInfo(this, \'pool'+n+'\')" type="button">ⓘ</button></div>' +
+        '<input type="email" class="pool-email" placeholder="name@company.com" value="'+(email||'').replace(/"/g,'&quot;')+'">' +
+        poolInfoPopHTML(n) +
+      '</div>' +
+      '<button class="pool-remove" onclick="removeRow(this)" type="button" title="Remove">×</button>';
+    wrap.appendChild(row);
+  }
+
+  function removeRow(btn){
+    var wrap = document.getElementById('poolRows');
+    if (wrap.children.length <= 1) return;
+    btn.closest('.pool-row').remove();
+    Array.prototype.forEach.call(wrap.querySelectorAll('.pool-order'), function(el, i){ el.textContent = i+1; });
+  }
+
+  function populateForm(data){
+    SHARE_WITH = data.shareWithEmail;
+    document.getElementById('shareWithEmail').value = data.shareWithEmail;
+    document.getElementById('popHostEmail').textContent = data.shareWithEmail;
+    document.getElementById('hostLabel').value = data.hostLabel;
+    document.getElementById('hostEmail').value = data.hostEmail;
+    document.getElementById('timezone').value = data.timezone;
+    document.getElementById('pageHeading').value = data.pageHeading;
+    document.getElementById('eventTitle').value = data.eventTitleTemplate;
+
+    document.getElementById('poolRows').innerHTML = '';
+    (data.pool.length ? data.pool : [{label:'',email:''}]).forEach(function(m){
+      addRow(m.label, m.email);
+    });
+
+    renderDays(data.workingHours);
+  }
+
+  function saveSetup(){
+    var banner = document.getElementById('saveBanner');
+    banner.className = 'banner';
+    var btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    var pool = [];
+    var labels = document.querySelectorAll('.pool-label');
+    var emails = document.querySelectorAll('.pool-email');
+    for (var i=0; i<emails.length; i++){
+      if (!emails[i].value) continue;
+      pool.push({ label: labels[i].value, email: emails[i].value });
+    }
+
+    var workingHours = {};
+    document.querySelectorAll('.day-start').forEach(function(input){
+      var day = input.getAttribute('data-day');
+      var end = document.querySelector('.day-end[data-day="'+day+'"]');
+      workingHours[day] = input.value && end.value ? [[input.value, end.value]] : [];
+    });
+
+    var form = {
+      hostLabel: document.getElementById('hostLabel').value,
+      hostEmail: document.getElementById('hostEmail').value,
+      timezone: document.getElementById('timezone').value,
+      pageHeading: document.getElementById('pageHeading').value,
+      eventTitleTemplate: document.getElementById('eventTitle').value,
+      workingHours: workingHours,
+      pool: pool
+    };
+
+    apiPost({ action: 'saveSetupData', password: CURRENT_PASSWORD, form: form }).then(function(res){
+      btn.disabled = false;
+      btn.textContent = 'Save setup';
+      if (!res.ok) {
+        banner.textContent = res.error;
+        banner.className = 'banner err show';
+        return;
+      }
+      banner.textContent = 'Saved. The booking page is live with these settings.';
+      banner.className = 'banner ok show';
+    });
+  }
+</script>
+</body>
+</html>

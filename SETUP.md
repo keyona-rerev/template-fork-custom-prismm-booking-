@@ -1,98 +1,117 @@
 # OR Booking Engine — Frontend Template
 
-This is the static-site half of the OR Booking Engine. It's a template: this
-repo alone does nothing until it's paired with a GAS backend and pointed at
-that backend's `/exec` URL.
+This repo is the static-site half of the OR Booking Engine. It's a template:
+by itself it does nothing until it's paired with a GAS backend and pointed
+at that backend's `/exec` URL.
 
-Use GitHub's **"Use this template"** button on this repo (not Fork) to make a
-clean copy with no shared git history — that's the right move for each new
-person or client who wants their own instance.
+Use GitHub's **"Use this template"** button on this repo (not Fork) to make
+a clean copy with no shared git history — that's the right move for each
+new person or client who wants their own instance.
 
 ## What this fixes
 
 Any Google Apps Script web app served from `script.google.com` shows a
-permanent, un-removable grey Google banner. This repo is the frontend, hosted
-off-Google, that eliminates it. The GAS project behind it does nothing but
-serve JSON now (see the paired GAS project's `Code.gs`) — no rendered HTML.
+permanent, un-removable grey Google banner. This repo is the frontend,
+hosted off-Google, that eliminates it for the page a prospect actually
+sees. The GAS project behind it does nothing but serve JSON to this page —
+no rendered HTML for the booking flow.
 
-## What you need before you start
+## Two URLs, two audiences
 
-1. A GAS project already migrated to JSON-only `doGet`/`doPost` (see
-   `Code.gs` in the OR Booking Engine GAS project — copy that pattern if
-   you're standing up a new backend from scratch).
-2. That GAS project deployed as a web app, and its `/exec` URL copied from
-   **Deploy → Manage deployments**.
+| | Booking page | Setup page |
+|---|---|---|
+| Lives in | this repo → Netlify | the GAS project only |
+| Talks to GAS via | `fetch()`, `?action=...` → JSON | `google.script.run` (unchanged, old-style) |
+| Reachable at | your Netlify URL / custom domain | the GAS `/exec` URL directly — no query string |
+| Has the Google banner | No | Yes — harmless, only opened by whoever configures the instance, never a prospect |
 
-## Two URLs, two audiences — read this before deploying
+**This repo contains only the booking page** (`index.html`). There is no
+`setup/` folder — the setup page is never hosted here, never on Netlify,
+and never has a public link anywhere except the GAS project's own `/exec`
+URL. Don't add a static setup page back to this repo; that defeats the
+point of keeping it GAS-only.
 
-This template has exactly one file that goes to Netlify: `index.html` — the
-public booking page a prospect actually uses. That's the only thing the
-Google banner problem was ever about.
+## Before you start (per new instance)
 
-The **setup page is not part of this repo's Netlify deploy.** It's served
-natively by your GAS backend at its own `/exec` URL — a plain visit with no
-`?action=` query param renders it directly via `HtmlService`
-(`SetupPage.html`, living in the GAS project, not here). That page still
-carries the Google banner, and that's fine — it's only ever opened by
-whoever configures the instance, never by a prospect. There is deliberately
-no public "setup link" hosted anywhere outside the GAS project itself.
+Do the GAS side first, all the way through. Only come back to this repo
+once you have a working `/exec` URL.
 
-`setup/index.html` in this repo is a dead stub, kept only because this
-repo's toolchain has no delete-file operation. Do not deploy it, and don't
-revive it — reintroducing a public setup page defeats the point of keeping
-it GAS-only.
+1. **File → Make a copy** of the source GAS project — this is the new
+   client's own project.
+2. In the copy: **Editor → Services (+) → add Calendar API.** Fresh copies
+   sometimes 403 on calendar access without this; do it before anything
+   else, not after hitting the error.
+3. **Deploy → New deployment → Web app.** Copy the `/exec` URL — you need
+   it in the next step.
+4. Open `Setup.gs` in the copy, find `runInitSetup()`, and change the
+   password string on the line calling `initSetupPageAccess('...')` to this
+   client's password.
+5. Run `runInitSetup` (function dropdown at the top of the editor → Run).
+   This sets `SETUP_PASSWORD`, auto-detects `SCRIPT_OWNER_EMAIL`, and
+   records `SETUP_URL`.
+6. Send the client the `/exec` URL and the password. They open it directly
+   (no query string needed — no `?action=` means GAS renders the setup
+   page), share their calendars with the `SCRIPT_OWNER_EMAIL` shown on the
+   page, and fill in host/pool/hours themselves.
+7. Once they've shared calendars, run `diagnoseCalendarAccess()` to confirm
+   every calendar is actually readable before calling it done.
 
-## Setup (1 file to edit)
+## Setup this repo (1 file to edit)
 
 1. Open `index.html`. Find this line near the top of the `<script>` block:
    ```js
    var API_BASE = '__REPLACE_WITH_YOUR_GAS_EXEC_URL__';
    ```
-   Replace the placeholder with your GAS project's `/exec` URL (from
-   **Deploy → Manage deployments** in the Apps Script editor).
+   Replace the placeholder with the `/exec` URL from Step 3 above.
 2. Commit.
 
 That's the only required edit. Everything else — copy, colors, the OR
 availability logic — lives server-side in the GAS project, not here.
 
+**If you forget this step:** the page won't silently call a broken or wrong
+URL. It checks for the placeholder on load and replaces the whole page with
+a visible red error telling you to come back here — so a half-configured
+fork fails loudly instead of quietly pointing at the wrong calendar backend.
+
 ## Deploy the booking page to Netlify
 
 **Fastest (no CLI):**
-1. [app.netlify.com](https://app.netlify.com) → **Add new site → Deploy manually**.
-2. Drag just `index.html` (or a folder containing only it) onto the drop
-   zone — leave `setup/` out of whatever you drag.
+1. [app.netlify.com](https://app.netlify.com) → **Add new site → Deploy
+   manually**.
+2. Drag `index.html` (or a folder containing just it) onto the drop zone.
 
 **Git-linked (auto-deploys on every push):**
 1. [app.netlify.com](https://app.netlify.com) → **Add new site → Import an
    existing project → Deploy with GitHub**.
-2. Pick this repo (your own copy, made via "Use this template").
-3. Leave the build command blank and the publish directory as `/` — this is
-   a plain static site, nothing to build. The dead `setup/index.html` stub
-   will also get published at `/setup/` in this mode since Netlify deploys
-   the whole repo; that's harmless (it has no working code left in it) but
-   if it bothers you, delete the file locally and push before connecting.
+2. Pick this repo (your own copy, made via "Use this template"). First time
+   through, this may prompt a one-time GitHub connection for that Netlify
+   account.
+3. Leave the build command blank and the publish directory as `/` — this
+   is a plain static site, nothing to build.
 
-## Finding the setup link
+Either way, Netlify gives you a `*.netlify.app` URL immediately. Point a
+custom subdomain at it from **Domain management** on the site if the
+client needs one (Netlify gives you the CNAME target to add at your DNS
+host).
 
-Just the `/exec` URL itself, no query string. Apps Script also auto-records
-it as the `SETUP_URL` Script Property (Project Settings → Script
-Properties) so it's not something to hunt for in Deploy dialogs — see the
-comments in `Setup.gs` in the GAS project for how that gets refreshed after
-a redeploy.
+## Finding the setup link later
 
-Point a custom subdomain at the Netlify booking page from **Domain
-management** on the site if you want one (Netlify gives you the CNAME
-target to add at your DNS host). The setup page, being GAS-hosted, has no
-custom domain of its own — it stays on `script.google.com`.
+Just the GAS project's `/exec` URL itself, no query string — a plain visit
+renders the setup page. It's also auto-recorded as the `SETUP_URL` Script
+Property (Project Settings → Script Properties in that project) so it's
+never something to hunt for in Deploy dialogs. See the comments in
+`Setup.gs` for how that gets refreshed after a redeploy.
 
 ## Gotchas
 
 - `apiPost` sends with `Content-Type: text/plain` on purpose — that's what
   lets the browser skip a CORS preflight against the GAS domain. The GAS
   side still parses the body as JSON. Don't change this to
-  `application/json` without also handling CORS preflight in `doOptions`.
+  `application/json` without also handling a CORS preflight in `doOptions`.
 - If you rotate or redeploy the GAS project and get a new `/exec` URL,
-  update `API_BASE` in both HTML files and redeploy the static site — the
-  two are not automatically linked.
+  update `API_BASE` in `index.html` and redeploy the static site — the two
+  are not automatically linked. There's no shared ID between a GitHub repo
+  and a GAS project; the only connection is that one hardcoded URL, so
+  nothing catches a stale one except the placeholder guard above.
 - Pool member names/emails belong in the GAS project's config (Script
-  Properties, via the setup page), never hardcoded into these HTML files.
+  Properties, via the setup page), never hardcoded into `index.html`.

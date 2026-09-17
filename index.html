@@ -121,6 +121,26 @@
   // static site. Swap the line below for your own deployment's /exec URL.
   var API_BASE = '__REPLACE_WITH_YOUR_GAS_EXEC_URL__';
 
+  // Loud, impossible-to-miss guard: if whoever forked this repo deployed
+  // without editing API_BASE above, don't silently fetch a broken/wrong
+  // URL (which could mean pointing at someone else's calendar backend).
+  // Stop here and say so on the page instead.
+  if (API_BASE.indexOf('REPLACE_WITH_YOUR_GAS_EXEC_URL') !== -1) {
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.innerHTML =
+        '<div style="max-width:640px;margin:60px auto;padding:24px;' +
+        'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;' +
+        'background:#fff3f2;border:1px solid #f9655b;border-radius:12px;color:#a83226;">' +
+        '<strong>API_BASE not configured.</strong><br><br>' +
+        'This page still has the placeholder GAS URL. Open index.html, find ' +
+        '<code>var API_BASE = \'__REPLACE_WITH_YOUR_GAS_EXEC_URL__\'</code>, ' +
+        'and replace it with this client\'s GAS project\'s /exec URL ' +
+        '(Apps Script editor → Deploy → Manage deployments). See SETUP.md.' +
+        '</div>';
+    });
+    throw new Error('API_BASE not configured — see on-page message.');
+  }
+
   function apiGet(params){
     var qs = Object.keys(params).map(function(k){
       return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);

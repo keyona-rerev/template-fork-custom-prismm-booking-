@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="https://res.cloudinary.com/dialhpycd/image/upload/v1784587218/prismm_logo_dark_l1hxso.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1b2b45; --coral:#f9655b; --purple:#6658ea; --yellow:#c98a1f;
+    --paper:#f4f1ea; --white:#fff; --ink:#1b2b45;
+    --display:"Bricolage Grotesque",sans-serif; --body:"Hanken Grotesk",sans-serif;
+    --border: rgba(27,43,69,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;padding:32px 20px 60px}
+  .wrap{max-width:820px;margin:0 auto}
+  .logo{height:136px;margin-bottom:26px;display:block}
+  h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;line-height:1.02;color:var(--ink)}
+  .sub{color:rgba(27,43,69,.7);margin-top:12px;max-width:52ch}
+  .meta{margin-top:18px;font-size:13px;color:rgba(27,43,69,.5);letter-spacing:.02em}
+
+  .panel{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:26px;margin-top:28px;position:relative;box-shadow:0 2px 10px rgba(27,43,69,.04)}
+  .label{font-family:var(--display);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral);font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .fresh{font-family:var(--body);font-size:11px;letter-spacing:.04em;text-transform:none;font-weight:400;color:rgba(27,43,69,.45)}
+  .fresh.checking{color:var(--yellow)}
+
+  .days{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px}
+  .day{flex:0 0 auto;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;text-align:center;min-width:86px;transition:.15s}
+  .day:hover{border-color:rgba(27,43,69,.35)}
+  .day.active{background:var(--purple);border-color:var(--purple)}
+  .day.active .dow, .day.active .num{color:#fff}
+  .day .dow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;color:var(--ink)}
+  .day .num{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.2;color:var(--ink)}
+
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+  .slot{background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:12px 10px;cursor:pointer;font-family:var(--body);color:var(--ink);font-size:15px;font-weight:500;transition:.15s;text-align:center}
+  .slot:hover{border-color:var(--coral);background:rgba(249,101,91,.08)}
+  .slot.active{background:var(--coral);border-color:var(--coral);color:#fff}
+  .slot.pending{opacity:.55;cursor:progress}
+  .slot .who{display:block;font-size:11px;opacity:.7;margin-top:3px;font-weight:400}
+
+  .stale{opacity:.4;pointer-events:none;transition:opacity .2s}
+
+  form{display:grid;gap:14px;margin-top:4px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  label span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(27,43,69,.6);margin-bottom:6px}
+  input,textarea{width:100%;background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--ink);font-family:var(--body);font-size:15px}
+  input:focus,textarea:focus{outline:none;border-color:var(--purple);background:var(--white)}
+  textarea{min-height:88px;resize:vertical}
+
+  button.primary{background:var(--coral);color:#fff;border:none;border-radius:999px;padding:14px 30px;font-family:var(--display);font-weight:700;font-size:16px;cursor:pointer;justify-self:start;transition:.15s}
+  button.primary:hover{filter:brightness(1.07)}
+  button.primary:disabled{opacity:.5;cursor:not-allowed}
+
+  .selected-note{background:rgba(102,88,234,.1);border:1px solid rgba(102,88,234,.35);border-radius:10px;padding:12px 16px;font-size:14px;margin-bottom:4px;color:var(--ink)}
+  .msg{border-radius:10px;padding:14px 16px;font-size:14px;margin-top:16px;display:none}
+  .msg.err{background:rgba(249,101,91,.1);border:1px solid rgba(249,101,91,.4);display:block;color:#a83226}
+  .msg.warn{background:rgba(201,138,31,.1);border:1px solid rgba(201,138,31,.4);display:block;color:#8a5f10}
+  .muted{color:rgba(27,43,69,.55);font-size:14px}
+
+  .done{text-align:center;padding:40px 20px}
+  .done .tick{width:56px;height:56px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+  .done h2{font-family:var(--display);font-weight:700;font-size:26px;margin-bottom:10px;color:var(--ink)}
+
+  .hidden{display:none}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <img class="logo" id="logo" src="" alt="Prismm">
+  <h1 id="heading">Loading</h1>
+  <p class="sub" id="subheading"></p>
+  <p class="meta" id="meta"></p>
+
+  <div class="panel" id="pickPanel">
+    <div class="label">
+      <span>Pick a time</span>
+      <span class="fresh" id="fresh"></span>
+    </div>
+    <div id="loading" class="muted">Checking calendars…</div>
+    <div id="picker" class="hidden">
+      <div class="days" id="days"></div>
+      <div class="slots" id="slots"></div>
+    </div>
+    <div class="msg" id="loadErr"></div>
+  </div>
+
+  <div class="panel hidden" id="formPanel">
+    <div class="label"><span>Your details</span></div>
+    <div class="selected-note" id="selectedNote"></div>
+    <form id="form" onsubmit="return false;">
+      <div class="row">
+        <label><span>Name</span><input id="f_name" type="text" autocomplete="name"></label>
+        <label><span>Email</span><input id="f_email" type="email" autocomplete="email"></label>
+      </div>
+      <label><span>Institution</span><input id="f_company" type="text" autocomplete="organization"></label>
+      <label><span>What would you like to cover?</span><textarea id="f_notes"></textarea></label>
+      <button class="primary" id="submit" onclick="submitBooking()">Confirm booking</button>
+    </form>
+    <div class="msg" id="formErr"></div>
+  </div>
+
+  <div class="panel hidden" id="donePanel">
+    <div class="done">
+      <div class="tick">✓</div>
+      <h2>You're booked</h2>
+      <p class="muted" id="doneDetail"></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Backend: GAS deployed as a JSON-only API (see Code.gs doGet/doPost in the
+  // paired GAS project). This page never talks to google.script.run — it's a
+  // static site. Swap the line below for your own deployment's /exec URL.
+  var API_BASE = '__REPLACE_WITH_YOUR_GAS_EXEC_URL__';
+
+  function apiGet(params){
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+    return fetch(API_BASE + '?' + qs)
+      .then(function(r){ return r.json(); })
+      .catch(function(err){ return { ok:false, error: String(err.message || err) }; });
+  }
+
+  // text/plain avoids a CORS preflight against the GAS domain; the body is
+  // still parsed as JSON server-side (see Code.gs doPost).
+  function apiPost(body){
+    return fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    })
+      .then(function(r){ return r.json(); })
+      .catch(function(err){ return { ok:false, error: String(err.message || err) }; });
+  }
+
+  var STATE = {
+    slots: [], byDay: {}, dayKeys: [], activeDay: null,
+    selected: null, cfg: null,
+    fetchedAt: 0, refreshing: false
+  };
+
+  function localTzName(){
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){ return 'your local time'; }
+  }
+  function fmtTime(iso){
+    return new Date(iso).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  }
+  function fmtLong(iso){
+    var d = new Date(iso);
+    return d.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'}) + ' at ' + fmtTime(iso);
+  }
+  function ageSeconds(){ return (Date.now() - STATE.fetchedAt) / 1000; }
+
+  apiGet({ action: 'getPageConfig' }).then(function(cfg){
+    STATE.cfg = cfg;
+    document.getElementById('logo').src = cfg.logoUrl;
+    document.getElementById('heading').textContent = cfg.heading;
+    document.getElementById('subheading').textContent = cfg.subheading;
+    document.getElementById('meta').textContent =
+      cfg.slotMinutes + ' minutes · times shown in ' + localTzName();
+  });
+
+  loadSlots(true);
+
+  // Any time the tab comes back into focus, or the list ages past the
+  // configured threshold, re-query the calendars. The list on screen is
+  // never allowed to drift far from what the calendars actually say.
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) maybeRefresh();
+  });
+  window.addEventListener('focus', maybeRefresh);
+  setInterval(maybeRefresh, 30000);
+
+  function maybeRefresh(){
+    var limit = (STATE.cfg && STATE.cfg.staleSeconds) || 180;
+    if (STATE.refreshing) return;
+    if (document.getElementById('donePanel').classList.contains('hidden') === false) return;
+    if (ageSeconds() < limit) return;
+    loadSlots(false);
+  }
+
+  function setFresh(text, checking){
+    var el = document.getElementById('fresh');
+    el.textContent = text;
+    el.className = 'fresh' + (checking ? ' checking' : '');
+  }
+
+  function loadSlots(first){
+    STATE.refreshing = true;
+    setFresh('Checking calendars…', true);
+    if (!first) document.getElementById('picker').classList.add('stale');
+
+    apiGet({ action: 'getSlots' }).then(function(res){
+      STATE.refreshing = false;
+      document.getElementById('picker').classList.remove('stale');
+      renderSlots(res);
+    });
+  }
+
+  function showLoadError(msg){
+    document.getElementById('loading').style.display = 'none';
+    setFresh('', false);
+    var el = document.getElementById('loadErr');
+    el.className = 'msg err';
+    el.textContent = msg;
+  }
+
+  function renderSlots(res){
+    document.getElementById('loading').style.display = 'none';
+    if (!res.ok) { showLoadError(res.error); return; }
+
+    document.getElementById('loadErr').className = 'msg';
+    STATE.fetchedAt = Date.now();
+    setFresh('Live as of ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}), false);
+
+    if (!res.slots.length) {
+      showLoadError('No open times in the next two weeks. Reply to the email and we will find one.');
+      return;
+    }
+
+    var previousDay = STATE.activeDay;
+    STATE.slots = res.slots;
+    STATE.byDay = {};
+    STATE.dayKeys = [];
+
+    // Group by the booker's own local date, not the host's.
+    res.slots.forEach(function(s){
+      var d = new Date(s.startIso);
+      var key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      if (!STATE.byDay[key]) { STATE.byDay[key] = []; STATE.dayKeys.push(key); }
+      STATE.byDay[key].push(s);
+    });
+
+    var daysEl = document.getElementById('days');
+    daysEl.innerHTML = '';
+    STATE.dayKeys.forEach(function(key){
+      var d = new Date(STATE.byDay[key][0].startIso);
+      var btn = document.createElement('div');
+      btn.className = 'day';
+      btn.innerHTML = '<div class="dow">' + d.toLocaleDateString([], {weekday:'short'}) + '</div>' +
+                      '<div class="num">' + d.getDate() + '</div>' +
+                      '<div class="dow">' + d.toLocaleDateString([], {month:'short'}) + '</div>';
+      btn.onclick = function(){ selectDay(key); };
+      daysEl.appendChild(btn);
+    });
+
+    document.getElementById('picker').classList.remove('hidden');
+    var keep = (previousDay && STATE.byDay[previousDay]) ? previousDay : STATE.dayKeys[0];
+    selectDay(keep);
+  }
+
+  function selectDay(key){
+    STATE.activeDay = key;
+    var nodes = document.querySelectorAll('.day');
+    STATE.dayKeys.forEach(function(k, i){
+      if (nodes[i]) nodes[i].className = 'day' + (k === key ? ' active' : '');
+    });
+
+    var el = document.getElementById('slots');
+    el.innerHTML = '';
+    (STATE.byDay[key] || []).forEach(function(s){
+      var b = document.createElement('button');
+      b.className = 'slot';
+      b.type = 'button';
+      b.innerHTML = fmtTime(s.startIso) + (s.assignedLabel ? '<span class="who">' + s.assignedLabel + '</span>' : '');
+      b.onclick = function(){ selectSlot(s, b); };
+      el.appendChild(b);
+    });
+  }
+
+  // Live re-check against the calendars before the form is even shown.
+  function selectSlot(slot, node){
+    var all = document.querySelectorAll('.slot');
+    for (var i=0;i<all.length;i++){ all[i].classList.remove('active'); all[i].classList.remove('pending'); }
+    node.classList.add('pending');
+    setFresh('Confirming that time is still open…', true);
+
+    apiGet({ action: 'verifySlot', startIso: slot.startIso }).then(function(res){
+      node.classList.remove('pending');
+      if (!res.ok) {
+        var warn = document.getElementById('loadErr');
+        warn.className = 'msg warn';
+        warn.textContent = res.error;
+        document.getElementById('formPanel').classList.add('hidden');
+        STATE.selected = null;
+        loadSlots(false);
+        return;
+      }
+      document.getElementById('loadErr').className = 'msg';
+      node.classList.add('active');
+      setFresh('Live as of ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}), false);
+
+      STATE.selected = slot;
+      slot.assignedLabel = res.assignedLabel || slot.assignedLabel;
+      document.getElementById('selectedNote').textContent =
+        fmtLong(slot.startIso) + (slot.assignedLabel ? ' · with ' + slot.assignedLabel : '');
+      document.getElementById('formPanel').classList.remove('hidden');
+      document.getElementById('formPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  }
+
+  function submitBooking(){
+    if (!STATE.selected) return;
+    var err = document.getElementById('formErr');
+    err.className = 'msg';
+    err.textContent = '';
+
+    var payload = {
+      startIso: STATE.selected.startIso,
+      name: document.getElementById('f_name').value,
+      email: document.getElementById('f_email').value,
+      company: document.getElementById('f_company').value,
+      notes: document.getElementById('f_notes').value
+    };
+
+    var btn = document.getElementById('submit');
+    btn.disabled = true;
+    btn.textContent = 'Booking…';
+
+    apiPost({ action: 'bookSlot', payload: payload }).then(function(res){
+      btn.disabled = false;
+      btn.textContent = 'Confirm booking';
+      if (!res.ok) {
+        err.className = 'msg err';
+        err.textContent = res.error;
+        STATE.selected = null;
+        document.getElementById('formPanel').classList.add('hidden');
+        loadSlots(false);
+        return;
+      }
+      document.getElementById('pickPanel').classList.add('hidden');
+      document.getElementById('formPanel').classList.add('hidden');
+      document.getElementById('donePanel').classList.remove('hidden');
+      document.getElementById('doneDetail').textContent =
+        'A calendar invite is on its way to ' + payload.email + ' for ' + fmtLong(payload.startIso) +
+        (res.assignedLabel ? '. You will be meeting with ' + res.assignedLabel + '.' : '. Someone from the team will be on the call with you.');
+    });
+  }
+</script>
+</body>
+</html>

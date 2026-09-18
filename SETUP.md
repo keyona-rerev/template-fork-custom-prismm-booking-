@@ -4,9 +4,9 @@ This repo is the static-site half of the OR Booking Engine. It's a template:
 by itself it does nothing until it's paired with a GAS backend and pointed
 at that backend's `/exec` URL.
 
-Use GitHub's **"Use this template"** button on this repo (not Fork) to make
-a clean copy with no shared git history — that's the right move for each
-new person or client who wants their own instance.
+Click **Fork** on this repo to make your own copy for each new person or
+client who wants their own instance. A fork keeps a visible link back to
+this original repo — that's normal GitHub behavior, not a problem.
 
 ## What this fixes
 
@@ -36,23 +36,23 @@ point of keeping it GAS-only.
 Do the GAS side first, all the way through. Only come back to this repo
 once you have a working `/exec` URL.
 
-1. **File → Make a copy** of the source GAS project — this is the new
-   client's own project.
-2. In the copy: **Editor → Services (+) → add Calendar API.** Fresh copies
+1. Open the source GAS project. On the left-hand menu (hover the icons if
+   it's collapsed, to reveal the labels), click **Overview**.
+2. On that page, in the **top right corner**, click the **copy button** —
+   this makes a whole new copy of the project under your own account. This
+   is the new client's own project.
+3. In the copy: **Editor → Services (+) → add Calendar API.** Fresh copies
    sometimes 403 on calendar access without this; do it before anything
    else, not after hitting the error.
-3. **Deploy → New deployment → Web app.** Copy the `/exec` URL — you need
+4. **Deploy → New deployment → Web app.** Copy the `/exec` URL — you need
    it in the next step.
-4. Open `Setup.gs` in the copy, find `runInitSetup()`, and change the
-   password string on the line calling `initSetupPageAccess('...')` to this
-   client's password.
 5. Run `runInitSetup` (function dropdown at the top of the editor → Run).
-   This sets `SETUP_PASSWORD`, auto-detects `SCRIPT_OWNER_EMAIL`, and
+   No password to set — this just auto-detects `SCRIPT_OWNER_EMAIL` and
    records `SETUP_URL`.
-6. Send the client the `/exec` URL and the password. They open it directly
-   (no query string needed — no `?action=` means GAS renders the setup
-   page), share their calendars with the `SCRIPT_OWNER_EMAIL` shown on the
-   page, and fill in host/pool/hours themselves.
+6. Send the client the `/exec` URL — that's the whole setup link, no
+   password. A plain visit (no query string) renders the setup page. They
+   share their calendars with the `SCRIPT_OWNER_EMAIL` shown on that page,
+   and fill in host/pool/hours themselves.
 7. Once they've shared calendars, run `diagnoseCalendarAccess()` to confirm
    every calendar is actually readable before calling it done.
 
@@ -83,9 +83,8 @@ fork fails loudly instead of quietly pointing at the wrong calendar backend.
 **Git-linked (auto-deploys on every push):**
 1. [app.netlify.com](https://app.netlify.com) → **Add new site → Import an
    existing project → Deploy with GitHub**.
-2. Pick this repo (your own copy, made via "Use this template"). First time
-   through, this may prompt a one-time GitHub connection for that Netlify
-   account.
+2. Pick this repo (your own fork). First time through, this may prompt a
+   one-time GitHub connection for that Netlify account.
 3. Leave the build command blank and the publish directory as `/` — this
    is a plain static site, nothing to build.
 
